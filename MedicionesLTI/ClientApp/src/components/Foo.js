@@ -67,11 +67,13 @@ const Foo = () => {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
 
-    const routesAPIUrl = 'https://localhost:44324/api';
-    const canvasAPIUrl = 'https://testcanvas.espol.edu.ec/api/v1';
+    const baseAPIUrl = 'https://localhost:44324';
+    //const baseAPIUrl = 'https://testltimediciones.espol.edu.ec';
+    const analyticsAPIUrl = baseAPIUrl + '/api/outcomes';
+    const routesAPIUrl = baseAPIUrl + '/api/routes';
+    const canvasAPIUrl = baseAPIUrl + '/api/canvas';
 
     const headers = new Headers({
-        'Authorization': 'Bearer eh6ADTeUhYpH8rhV6JWCSZWsNz8ZTq5oJzwSxE2ckXi8H7yaCGNwjZXfjPolY9fE',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
         'Content-Type': 'application/json'
@@ -356,13 +358,13 @@ const Foo = () => {
                 headers: headers,
                 body: JSON.stringify({ "outcomeId": selectedOutcomeGroup.id, "row": JSON.stringify(resultsAndImprovementsData) })
             };
-            fetch(`${routesAPIUrl}/outcomes/observation/`, requestOptions);
+            fetch(`${analyticsAPIUrl}/observation/`, requestOptions);
         }
     }, [resultsAndImprovementsData]);
 
     useEffect(() => {
         if (selectedOutcomeGroup && Object.keys(selectedOutcomeGroup).length > 0) {
-            fetch(`${routesAPIUrl}/outcomes/${selectedOutcomeGroup.id}/observation/`, {
+            fetch(`${analyticsAPIUrl}/${selectedOutcomeGroup.id}/observation/`, {
                 headers: headers
             })
                 .then(res => res.json())
@@ -466,10 +468,12 @@ const Foo = () => {
             .then(res => res.json())
             .then(
                 (result) => {
-                    result['sis_course_id'] = 147119;
+                    result['sis_course_id'] = 147142; //147119;
                     setCourse(result);
+                    console.log('Curso', result);
                 },
                 (error) => {
+                    console.log('Curso', error);
                     setCourse({});
                     showMessage(error);
                 }
@@ -478,7 +482,7 @@ const Foo = () => {
 
     // RutasMediciones - List Outcomes by Course
     const fetchOutcomesRM = async () => {
-        const response = await fetch(`${routesAPIUrl}/routes/${course?.sis_course_id}`, {
+        const response = await fetch(`${routesAPIUrl}/${course?.sis_course_id}`, {
             headers: headers
         })
             .then(res => res.json())
@@ -502,7 +506,7 @@ const Foo = () => {
     };
 
     const fetchStudents = async () => {
-        const response = await fetch(`${canvasAPIUrl}/courses/${courseId}/users/?enrollment_type=student`, {
+        const response = await fetch(`${canvasAPIUrl}/courses/${courseId}/users/`, {
             headers: headers
         })
             .then(res => res.json())
@@ -569,7 +573,7 @@ const Foo = () => {
 
     // CanvasLMS - List Outcomes by Outcome Group (List Criteria)
     const fetchOutcomes = async (outcomeGroupId) => {
-        const response = await fetch(`${canvasAPIUrl}/courses/${courseId}/outcome_groups/${outcomeGroupId}/outcomes/?outcome_style=full`, {
+        const response = await fetch(`${canvasAPIUrl}/courses/${courseId}/outcome_groups/${outcomeGroupId}/outcomes/`, {
             headers: headers
         })
             .then(res => res.json())
@@ -594,14 +598,14 @@ const Foo = () => {
 
         try {
             // Fetch outcome groups from canvas
-            const respOutcomeGroups = await fetch(`${canvasAPIUrl}/courses/${courseId}/outcome_groups/?outcome_style=full`, {
+            const respOutcomeGroups = await fetch(`${canvasAPIUrl}/courses/${courseId}/outcome_groups/`, {
                 headers: headers
             });
             const outcomeGroups = await respOutcomeGroups.json();
             const parentOutcomeGroup = outcomeGroups[0];
 
             // Fetch outcomes from routes system
-            const respOutcomesRM = await fetch(`${routesAPIUrl}/routes/${course?.sis_course_id}`);
+            const respOutcomesRM = await fetch(`${routesAPIUrl}/${course?.sis_course_id}`);
             const outcomesRM = await respOutcomesRM.json();
 
             outcomesRM?.map(outcomeRM => {
@@ -614,7 +618,7 @@ const Foo = () => {
                     const requestOptions = {
                         method: 'POST',
                         headers: headers,
-                        body: JSON.stringify({ title: outcomeRM.title, vendor_guid: outcomeRM.id })
+                        body: JSON.stringify({ title: outcomeRM.title, vendorId: outcomeRM.id })
                     };
                     fetch(`${canvasAPIUrl}/courses/${courseId}/outcome_groups/${parentOutcomeGroup.id}/subgroups/`, requestOptions);
                 }
@@ -660,11 +664,11 @@ const Foo = () => {
     }, [selectedOutcomeRM]);
 
     const renderTitlePerformanceHeader = (idx) => {
-        return <th className="center tWhite" style={{ background: "#2e5f2b"}} colSpan={4}>{"Performance Criteria " + (idx + 1)}</th>
+        return <th className="center bgDarkGreen tWhite" colSpan={4}>{"Performance Criteria " + (idx + 1)}</th>
     };
 
     const renderPerformanceColumns = useMemo(() => {
-        return performance?.map(p => <th className="center bgLightGreen">{p}</th>)
+        return performance?.map(p => <th className="center bgLightGreen tWhite">{p}</th>)
     }, [performance]);
 
     const renderOutcomeHeader = useMemo(() => {
@@ -862,7 +866,7 @@ const Foo = () => {
                     {renderPerformanceSummaryRow}
                     {renderTotalByPerformaceRow}
                     {renderTotalByCriteriaRow}
-                    {renderTotalByOutcomeRow}
+                    {/*renderTotalByOutcomeRow*/}
                 </tbody>
             </>
         )

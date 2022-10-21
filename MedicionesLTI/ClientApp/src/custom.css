@@ -53,11 +53,13 @@ table th, table td {
 }
 
 .bgDarkGreen {
-    background: #2e5f2b;
+    /*background: #2e5f2b;*/
+    background: #0d47a1;
 }
 
 .bgLightGreen {
-    background: #99d68e;
+    /*background: #99d68e;*/
+    background: #1976d2;
 }
 
 .bgDarkGray {

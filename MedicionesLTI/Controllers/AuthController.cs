@@ -65,11 +65,20 @@ namespace MedicionesLTI.Controllers
 
                     if (payload.Length == 6)
                     {
-                        payload = response.Split("form")[3].Split("value=")[3].Split("/>")[0].Split('"');
-
-
+                        string[] form = response.Split("form");
+                        try {
+                            string[] values = form[2].Split("value=");
+                            string[] delimiters = values[3].Split("/>");
+                            payload = delimiters[0].Split('"');
+                        }
+                        catch
+                        {
+                            string[] values = form[3].Split("value=");
+                            string[] delimiters = values[3].Split("/>");
+                            payload = delimiters[0].Split('"');
+                        }
+                        
                         string strParametros = ObtenerParametros(payload[1]);
-
                         if (!string.IsNullOrEmpty(strParametros))
                         {
                             parametrosCanvas = JObject.Parse(strParametros);
